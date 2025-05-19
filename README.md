@@ -85,4 +85,73 @@ This script generates the SFT data for LLaMAFactory
 
 # Codeforces Datasets
 
+We also successfully fine-tuned and evaluated our models on the `open-r1/codeforces` dataset. 
+
+The entire evaluation framework is built on Piston. We've pre-built Docker images which are available from Docker Hub.
+
+The detailed procedure is outlined below.
+
+## Load dataset
+
+Download `codeforces` datasets, and put it in `datasets` directory
+
+```
+datasets/
+├── codeforces/
+	├── test_prmopts.jsonl
+	├── test.jsonl
+	├── train_prompts.jsonl
+	├── test.jsonl
+```
+
+## Load docker image
+
+Download `piston_codeforces.7z`, unzip to `.tar` and run the following command
+
+```bash
+docker load -i piston_codeforces.tar
+```
+
+or you can directly pull from docker hub
+
+```bash
+docker pull 1814071380/piston_codeforces:latest
+```
+
+## Run Docker Container
+
+```bash
+docker run -d \
+  --name piston_codeforces \
+  -e PORT=2000 \
+  -e PISTON_COMPILE_TIMEOUT=60000 \
+  -e PISTON_RUN_TIMEOUT=60000 \
+  -e PISTON_OUTPUT_MAX_SIZE=1000000000 \
+  -e PISTON_MAX_FILE_SIZE=1000000000 \
+  -e PISTON_DISABLE_NETWORKING=true \
+  -e PISTON_REPO_URL=https://ghfast.top/https://github.com/guipenedo/piston/releases/download/pkgs/index \
+  -p 2000:2000 \
+  1814071380/piston_codeforces:latest
+```
+
+PS: 
+
+- `PISTON_REPO_URL` is proxy url, if you can directly access github repo, please change to `https://github.com/guipenedo/piston/releases/download/pkgs/index`
+- If you change the port `[2000]`, remember to change the code in `evaluation.py`
+
+## Inference & Evaluation
+
+```bash
+python inference.py --output_dir "output_dir" \
+    --model_path "model_path" \
+	--data_type "test" \
+    --max_new_tokens 16384 \
+	--gpu_memory_utilization 0.9 \
+    --temperature 0.6 --benchmark "codeforces" \
+	--num_gpus 2
+```
+
+```bash
+python evaluation.py --input_dir "directory_that_contains_predictions.jsonl" --benchmark codeforces
+```
 
