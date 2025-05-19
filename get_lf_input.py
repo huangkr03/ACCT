@@ -2,6 +2,7 @@ import os
 import json
 import random
 import numpy as np
+import argparse
 
 
 def load_json(file, encoding='utf-8'):
@@ -29,7 +30,7 @@ def load_original_data(input_dir="outputs/DeepSeek-R1-Distill-Qwen-7B/gsm8k/7b/O
 
 def copy_to_llamafactory_dir(input_dir="outputs/datasets", 
                              data_name="dataset.json",
-                             llamafactory_dir="/home/keruihuang/LLaMA-Factory/data",
+                             llamafactory_dir="../LLaMA-Factory/data",
                              dataset_name="dataset"):
     """
     Copy the formatted data to the LLaMA-Factory directory.
@@ -78,7 +79,7 @@ def copy_to_llamafactory_dir(input_dir="outputs/datasets",
 def get_llamafactory_input(input_dir="outputs/DeepSeek-R1-Distill-Qwen-7B/gsm8k/7b/Original/train/samples", 
                            file_name="predictions_filtered.jsonl",
                            data_name="dataset.json",
-                           llamafactory_dir="/home/keruihuang/LLaMA-Factory/data"):
+                           llamafactory_dir="../LLaMA-Factory/data"):
     original_data = load_original_data(input_dir, file_name)
     datalines = []
     for i in range(len(original_data)):
@@ -112,10 +113,18 @@ def get_llamafactory_input(input_dir="outputs/DeepSeek-R1-Distill-Qwen-7B/gsm8k/
 
 
 if __name__ == '__main__':
-    data_name = "dataset-gsm8k-all.json"  # change as you like
-    llamafactory_dir = "/home/keruihuang/LLaMA-Factory/data"  # llama factory data dir
-    # input_dir = "outputs/DeepSeek-R1-Distill-Qwen-32B/train_1024_5/gsm8k/7b/train/samples"  # dir that contains predictions_filtered.jsonl
-    input_dir = "/home/keruihuang/cot_compression/outputs/DeepSeek-R1-Distill-Qwen-7B/train_8k/gsm8k/7b/train/samples"  # dir that contains predictions_filtered.jsonl
+    parser = argparse.ArgumentParser(description='Generate LLaMA-Factory input data')
+    parser.add_argument('--data_name', type=str, default="dataset-gsm8k.json", help='Output dataset name')
+    parser.add_argument('--llamafactory_dir', type=str, default="../LLaMA-Factory/data", help='LLaMA Factory data directory')
+    parser.add_argument('--input_dir', type=str, 
+                        default="outputs/DeepSeek-R1-Distill-Qwen-7B/train_8k/gsm8k/7b/train/samples", 
+                        help='Directory containing predictions_filtered.jsonl')
+    
+    args = parser.parse_args()
+    
+    data_name = args.data_name
+    llamafactory_dir = args.llamafactory_dir
+    input_dir = args.input_dir
     get_llamafactory_input(input_dir=input_dir, 
                            data_name=data_name,
                            llamafactory_dir=llamafactory_dir)

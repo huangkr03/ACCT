@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 
 def load_jsonl(file, encoding='utf-8'):
     data = []
@@ -58,10 +59,22 @@ def data_processing(input_dir="outputs/DeepSeek-R1-Distill-Qwen-7B/gsm8k/7b/Orig
     filter_cot_length(input_path=correct_path, output_path=filtered_path)
 
 if __name__ == '__main__':
-    max_length = 8192
-    # input_dir = "outputs/DeepSeek-R1-Distill-Qwen-32B/train_512_1/gsm8k/7b/train/samples"
-    input_dir = "/home/keruihuang/cot_compression/outputs/DeepSeek-R1-Distill-Qwen-7B/train_8k/gsm8k/7b/train/samples"
-    pred_file = "predictions.jsonl"
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Process CoT data with filtering options')
+    parser.add_argument('--max_length', type=int, default=8192, help='Maximum CoT length to keep')
+    parser.add_argument('--input_dir', type=str, 
+                        default="outputs/DeepSeek-R1-Distill-Qwen-7B/train_8k/gsm8k/7b/train/samples",
+                        help='Directory containing prediction files')
+    parser.add_argument('--pred_file', type=str, default="predictions.jsonl", 
+                        help='Name of the predictions file')
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    # Use parsed arguments
+    max_length = args.max_length
+    input_dir = args.input_dir
+    pred_file = args.pred_file
     data_processing(input_dir=input_dir, pred_file=pred_file)
 
 

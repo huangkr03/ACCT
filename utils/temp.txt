@@ -1,0 +1,1065 @@
+Okay, so I have this programming problem to solve, and I need to figure out the best way to approach it. Let me read the problem again carefully.
+
+The problem is about a binary string S where each character represents either a square (1) or a circle (0). The task is to determine the maximum number of circles that can be inscribed in a square according to the given string. The inscribing process involves perfectly fitting the next figure inside the previous one, starting with the first figure as the largest, and each subsequent figure must be concentric. The key point is that each figure must have an integer dimension, and if it's not possible, we discard the rest of the string and just count the circles.
+
+Hmm, so the approach is to parse the string and determine the maximum number of circles possible. Let me think about how to model this.
+
+First, the string alternates between squares and circles. But wait, the string can have multiple squares or circles in a row, right? Like in sample 3, it's 1001000, which is 1,0,0,1,0,0,0. So the first is a square, then two circles, then a square, then three circles. But in the sample explanation, it's taking the first square, then two circles, then can't inscribe another square, so the maximum circles are 2.
+
+So the idea is that each time we have a figure (square or circle), the next figure must fit perfectly inside it. So for each pair of consecutive figures, we need to check if the next figure can fit.
+
+But wait, the problem says that it's not possible to inscribe if the dimension is not an integer. So, for example, if a square is inscribed in another square, the side length of the inner square must be such that it's a divisor or a fraction that allows the diameter (for circles) or side (for squares) to fit perfectly.
+
+Wait, maybe I should think of the process step by step.
+
+Let's say we have a square with side S. Inside it, we can inscribe a circle with diameter equal to S. Then, inside that circle, can we inscribe another square? The diameter of the circle is S, so the square inscribed in it would have a side equal to S / sqrt(2), which is irrational unless S is a multiple of sqrt(2). But since we need integer dimensions, that's only possible if S is a multiple of sqrt(2), which it can't be because sqrt(2) is irrational. So in this case, you can't inscribe a square inside a circle if you have to have integer dimensions.
+
+Alternatively, if you have a circle inside a square, then you can inscribe a smaller square inside the circle with side equal to the diameter of the circle, which is 2r (where r is the radius of the circle). But if that square is to be inscribed in the next figure, which could be a circle or another square.
+
+Wait, maybe I'm getting confused. Let me clarify.
+
+Each figure is inscribed in the previous one. So let's model each step:
+
+1. The first figure is either a square or a circle. Let's say it's a square with side length A.
+2. The next figure must fit perfectly inside it. If the next figure is a circle, its diameter must equal A, so radius A/2, and then it's inscribed in the square. Then, the next figure, if a square, must fit inside this circle. But the maximum square that can fit in a circle of diameter A has a side length of A / sqrt(2), which is only integer if A is a multiple of sqrt(2), which is impossible because A is integer. So if after a square, we have a circle, that's fine, but if we have another square, it's not possible unless A is 0, which it can't be.
+
+Wait, no. Wait, if you have a square, then you can inscribe a circle of diameter equal to the square's side length. Then, the circle's diameter is equal to the square's side. Then, the next figure could be a square inscribed in that circle, but as I said, the side length would be A / sqrt(2), which is not integer unless A is 0. So that's not possible.
+
+Alternatively, if after a circle, you have a square, can you inscribe a square inside the circle? Yes, because the maximum square that can fit inside a circle of diameter D is D / sqrt(2), which is D * sqrt(2)/2. But for that to be integer, D must be a multiple of sqrt(2), which again isn't possible because D is integer.
+
+Wait, maybe I'm approaching this wrong. Let's think about the process in terms of the side lengths or diameters and how they relate.
+
+Each step, when inscribing a figure inside another, the next figure's size is determined by the previous one.
+
+For squares:
+
+- The maximum square that can be inscribed in a larger square is the same as the original, so that's trivial.
+
+Wait, no. Wait, if you have a square, the largest square that can be inscribed in it is actually the same square, but rotated 45 degrees, but that's not concentric and has a smaller area. Wait, no, that's not correct. Wait, I think I need to get this straight.
+
+Wait, the problem says that each figure must be perfectly inscribed. So, for a square inside another square, the inner square can be rotated, but for it to be perfectly inscribed, it's the largest possible square that fits inside the outer square.
+
+Wait, but a square inscribed in another square, without rotation, would have the same side length. If you rotate it by 45 degrees, you can fit a larger square inside, but actually, that's not correct. Let me think.
+
+Wait, no, if you have a square of side A, the maximum square that can be inscribed in it (without rotating) is A. If you rotate it by 45 degrees, the maximum square that can fit inside has side length A * sqrt(2)/2 ≈ 0.707A, which is smaller. So, the maximum size of a square that can be inscribed in another square is the same size, but it's the same square. So, perhaps, you can't have a smaller square inscribed in a larger one unless you change the orientation, but that would make the inner square have a smaller side length.
+
+Wait, maybe I'm overcomplicating. Let's think about the cases where a square is inscribed in another figure:
+
+Case 1: Square inside a larger square.
+
+In this case, the inner square can have the same side length as the outer one, but that's the same square, which doesn't make sense. So perhaps, you can't have a smaller square inscribed in a larger one. Wait, that can't be. Maybe the inner square has a side length such that when rotated, it fits perfectly.
+
+Wait, perhaps the correct approach is to model the possible transitions between squares and circles.
+
+Let me consider each transition:
+
+If the current figure is a square with side length S.
+
+- The next figure can be a circle with diameter equal to S. So, the circle's diameter is S, which is the same as the square's side. So, the radius is S/2.
+
+- Then, the next figure after the circle can be a square, but its side length must be equal to the circle's diameter, which is S. But wait, a square inscribed in a circle must have a diagonal equal to the diameter of the circle. So, if the circle has diameter S, the square inscribed in it will have a diagonal of S, which means the side length is S / sqrt(2), which is irrational unless S is a multiple of sqrt(2), which it can't be because S is integer. So in this case, the next figure after a circle is a square, but the square's side length would not be integer. Therefore, it's impossible, so the process stops.
+
+Alternatively, after a circle, you can have another circle. But wait, the circle after the first one must fit inside the previous circle. So the diameter must be less than the previous one, and it's the same as the inner circle's diameter, but that would require it to be a smaller circle. But the problem says that the figures must be concentric, but it doesn't specify that the next figure must be smaller. Wait, no, because each figure is inscribed, so each subsequent figure must fit inside the previous one. So, if the first is a circle, the next must be a circle with a smaller diameter.
+
+Wait, no. Wait, if you have a circle with diameter S, you can inscribe another circle inside it with diameter less than S. But the problem says that you can inscribe a circle only if the diameter is an integer. So, for example, if the current circle has diameter S, the next circle can have diameter d, which is an integer less than S.
+
+But wait, how is that possible? Because a circle inscribed in another circle would have a smaller diameter. So, for example, if you have a circle of diameter 10, the next circle can have diameter 9, 8, etc., as long as it's integer.
+
+But wait, the problem says that the circle has a diameter, which is the same as the side of the square. So for example, in the sample input 1100, which is 1110, the first three are squares of side length 4, and the last is a circle of diameter 4. So, after the three squares, the next is a circle with diameter 4.
+
+Wait, but in that case, how does the circle fit into the square? If the square has side 4, then the circle inscribed in it would have diameter 4, which is the same as the square's side. So, that's allowed.
+
+But then, after that circle, can we inscribe another square? As before, the square would have a side length of 4 / sqrt(2), which is not integer. So, no, we can't.
+
+So, in this case, the maximum number of circles is 1.
+
+Another example is 0001: three circles, then a square. Wait, but wait, the sample explanation says that the square is inscribed in the three circles. So, the first three are circles, then a square of diameter 10, which is inscribed in the first circle. But wait, how?
+
+Wait, perhaps I have this backwards. Let me re-read the problem statement.
+
+Wait, the problem says: "perfectly inscribe (as shown in the example below) the respective geometric figure at S_{i+1} inside of S_i where i is in [0, N-2], if it is possible."
+
+Wait, so S_{i} is the current figure, and S_{i+1} is the next figure, inscribed inside. So, S_i is the previous figure, and S_{i+1} is inside it.
+
+So, for example, if S_i is a square, then S_{i+1} must be a figure that can be inscribed in it, which could be a square or a circle.
+
+But, after that, S_{i+1} becomes the new figure, and the next one must be inscribed inside it.
+
+So, the process is: start with the first figure, then each next figure is inscribed inside the previous one, and each step must be possible.
+
+But in the sample 0001, the string is 0001, so first three are circles, then a square. So, the first circle is inscribed, then the next circle is inscribed inside it, which is possible only if the diameter decreases. Then the next circle is inscribed in the previous one, and then a square is inscribed in the last circle.
+
+Wait, but a square inscribed in a circle must have a diagonal equal to the diameter of the circle. So, the square's side is diameter / sqrt(2). For this to be integer, diameter must be a multiple of sqrt(2), which is not possible because diameter is integer. So, in this case, the square can't be inscribed, so the process stops after the three circles. So the maximum number of circles is 3.
+
+Wait, but the sample explanation says that in the second case, 0010, the answer is 0. So, the string is 0010, which is two circles, then a square, then a circle. Wait, but according to the explanation, the first two circles are of diameter 10, and then the square can't be inscribed because the side would be non-integer. So, the process stops after the two circles, but since the next figure is a square, which can't be inscribed, the maximum number of circles is 0? Wait, that doesn't make sense.
+
+Wait, maybe I'm misunderstanding the sample. Let me look again.
+
+Sample Input 2:
+0010
+
+Sample Output:
+0
+
+Explanation: Let the first two circles be of diameter 10, we can see that we cannot inscribe another square of any integer dimension inside them. So, the answer is 0.
+
+Wait, so the string is 0010. So, the first two are circles, then a square, then a circle. So, the process is:
+
+- Start with a circle of diameter 10.
+- Then, inscribe another circle (diameter 10?) Wait, that can't be, because the next circle must be inside the previous one. So, diameter must be less than 10. So, let's say the first two circles are 10 and 9, then the square is inscribed in the 9 diameter circle.
+
+Wait, but wait, how is the square inscribed in a circle of diameter 9? The square's side would be 9 / sqrt(2), which is about 6.364, not integer. So, no, that's not possible. So, the process would stop after the two circles, but since the next figure is a square, which can't be inscribed, so we don't count the square as part of the circle count. So, the maximum number of circles is 0?
+
+Wait, perhaps the maximum number of circles is the number of circles in the string, but only if they can be inscribed in the previous figures. So, in this case, the string is 0010, which is two circles, then a square, then a circle.
+
+So, the first two circles can be inscribed as long as they fit inside each other. The square is next, but it's impossible to inscribe, so the process stops, and the circles after that are not counted. So, the maximum circles are the number of circles that can be inscribed before a non-inscribable figure.
+
+Wait, but the problem says that if the dimension is not integer, we discard the rest of the string. So, if after a certain point, a figure cannot be inscribed, we stop, and only count the number of circles up to that point.
+
+In the second sample, the string is 0010. So, the first figure is a circle. Then the next is a circle. Then a square, but the square can't be inscribed, so we stop. So, the maximum number of circles is 2? But the sample output is 0.
+
+Wait, but the sample output is 0. Hmm, maybe I'm misunderstanding the problem.
+
+Wait, the problem says: "the maximum number of circles we can inscribe in a square according to the given string." So, perhaps the string represents the order in which figures are inscribed, starting with the square, but the string can start with circles as well.
+
+Wait, perhaps the initial figure is a square, and each subsequent figure is inscribed in it. So, the string's first character is the initial figure, which can be a square or a circle. If it's a circle, then the initial figure is a circle, and the next figure must be inscribed in it.
+
+Wait, but the problem statement is a bit ambiguous about the initial figure. Let me read the problem statement again.
+
+Wait, the problem says: "the figure you are perfectly inscribing at S_{i+1} inside of S_i". So, the initial figure is S_0, then S_1 is inscribed inside S_0, then S_2 inside S_1, etc.
+
+So, the initial figure is S_0, which can be a square or a circle.
+
+But wait, the sample input 3 is 1001000, which is 1,0,0,1,0,0,0. So, the first figure is a square, then two circles, then a square, then three circles.
+
+So, after the initial square, you can inscribe a circle, then another circle, then a square, etc.
+
+So, let's model this.
+
+Each time, you have a current figure with a certain size, and the next figure must fit inside it.
+
+The process is as follows:
+
+- Start with the first character of the string as the initial figure.
+
+- Then, for each subsequent character, check if it can be inscribed in the previous figure.
+
+- If it can, add it to the count of circles (if it's a 0) or squares (if it's a 1).
+
+- If it can't, stop processing.
+
+So, the maximum number of circles is the number of 0s in the string that can be inscribed in the initial figure and each subsequent figure.
+
+But the key is to determine the initial size of the figure and how each subsequent figure's size relates to it.
+
+Let me formalize this.
+
+Let's denote:
+
+- For each figure in the string, starting from the first, we have a type (1 or 0) and a size (an integer).
+
+- The size depends on the previous figure.
+
+- For a square, the next figure (if a circle) must have a diameter equal to the square's side.
+
+- For a circle, the next figure (if a square) must have a side equal to the circle's diameter / sqrt(2), which must be integer.
+
+Wait, but that's the key point. When moving from a square to a circle, the circle's diameter is equal to the square's side.
+
+When moving from a circle to a square, the square's side is equal to the circle's diameter / sqrt(2), which must be integer.
+
+So, let's think about the process step by step.
+
+Case 1: Initial figure is a square (1) with side length S.
+
+- Next figure can be a circle (0) with diameter S.
+
+- Then, the next figure can be a square (1) with side length S / sqrt(2). But since S is integer, S / sqrt(2) is only integer if S is a multiple of sqrt(2), which is impossible because sqrt(2) is irrational. So, the next square can't be inscribed, so the process stops.
+
+- Alternatively, after the circle, you can have another circle (0) with diameter less than S, which is integer.
+
+So, for a square followed by a circle followed by another circle, the sizes must be such that each subsequent circle's diameter is less than the previous one and is integer.
+
+So, for example, starting with a square of side 4:
+
+- Next can be a circle of diameter 4.
+
+- Then, another circle of diameter 3.
+
+- Then, another circle of diameter 2, etc.
+
+But wait, can you have a circle of diameter 3 after a circle of diameter 4? Because the next circle must fit inside the previous one, which is possible as long as its diameter is less than the previous.
+
+So, the number of circles after a square is unbounded in this case, except by the string's length.
+
+Wait, no, because the string is finite. So, for each string, the process is to traverse each character, starting from the first, and for each step, check if the next figure can fit.
+
+But the problem is that after a square, you can have multiple circles as long as their diameters are decreasing integers.
+
+So, the process would allow as many circles as possible after a square, as long as each is smaller than the previous.
+
+But wait, the string may have a sequence like 1 followed by multiple 0s, and we need to count all of them as long as they can fit.
+
+But in that case, the maximum number of circles would be the number of 0s that can be inscribed in the square and each other.
+
+Similarly, if the initial figure is a circle, then the next figure can be a square only if the square's side is equal to the circle's diameter / sqrt(2), which must be integer.
+
+So, the key is to model the possible transitions and track the current size and figure type.
+
+But how do we model this in the code?
+
+Hmm, perhaps for each possible starting figure (square or circle), we can compute the maximum number of circles that can be inscribed.
+
+Wait, but the string can start with either, so we need to consider both possibilities and choose the maximum.
+
+Wait, no, because the string defines the order of figures, so the initial figure is fixed as the first character of the string. So, if the string starts with 0, the initial figure is a circle. If it starts with 1, initial is a square.
+
+So, the process is determined by the string, starting with the first figure, and then each subsequent figure must fit inside the previous one.
+
+So, the initial figure's size is determined by the first character, and then each subsequent figure's size is determined based on the type and whether it can fit.
+
+Wait, but the initial figure's size is not given; the size is determined by the process.
+
+Wait, no. The initial figure's size can be any integer. But the size must be chosen so that all subsequent figures can fit, and the maximum number of circles is determined.
+
+Wait, but how? Because the size is variable, and we need to choose it such that we can inscribe as many circles as possible. But the initial size can't be anything; it's determined by the process.
+
+Wait, maybe the initial figure's size is the maximal possible for the string, but I'm not sure.
+
+Alternatively, perhaps the initial figure's size is 1, as per the problem statement. Wait, no, the problem says the side or diameter must be any integer greater than 0. So, the initial size can be any positive integer, but we need to choose it such that the entire string can be processed, and the number of circles is maximized.
+
+Wait, but the problem says that if the dimension is not integer, we discard the rest of the string. So, the initial size is determined by the first figure, and then each subsequent figure must have a dimension that is integer.
+
+So, the initial size is S, which can be any positive integer. But to maximize the number of circles, we might have to choose S optimally.
+
+Wait, but this seems complicated. Because S is variable, and the initial size affects the subsequent steps.
+
+Wait, but perhaps the problem requires that all the figures in the string can be inscribed, starting from some initial size S, and the maximum number of circles is the number of 0s in the string that can be inscribed.
+
+But I'm not sure.
+
+Wait, maybe the initial size is determined by the first figure. For example, if the first figure is a square, then its side can be any positive integer. Then, the next figure (if a circle) must have a diameter equal to that square's side. Then, the circle's diameter is fixed, then the next figure (if a square) must have a side equal to diameter / sqrt(2), which must be integer. So, diameter must be a multiple of sqrt(2), but since diameter is integer, that's only possible if diameter is 0, which is not allowed. So, in this case, the next figure after a circle can only be another circle with a smaller diameter.
+
+So, in the case where the initial figure is a square, the next can be a circle, then another circle, etc., until the diameter becomes 1, then you can't inscribe any further circles because the next circle would have diameter 0, which is invalid.
+
+Alternatively, if the initial figure is a circle, then the next figure must be a square with side equal to diameter / sqrt(2). So, the diameter must be a multiple of sqrt(2), which is not possible, so the next figure can't be a square, so the process stops. Or, if it's a circle, the next can be a circle with a smaller diameter.
+
+So, for a string starting with a circle, the process can only have circles, each with a diameter less than the previous one, as long as each is integer.
+
+Wait, but if the initial figure is a circle, the next figure can be a square only if the square's side is diameter / sqrt(2), which is not integer. So, if the string has a '1' after a circle, it's impossible, so the process stops.
+
+Thus, in the case where the string starts with a circle, the only way to continue is by adding more circles, each with a smaller diameter.
+
+So, in this scenario, the maximum number of circles is the number of 0s in the string, provided that each subsequent 0 has a diameter less than the previous, and all are positive integers.
+
+Similarly, for a string starting with a square, the next can be a circle, then another circle, etc., as long as the diameters are decreasing integers, or it can stop after the first circle, if the next is a square, which is impossible.
+
+Wait, no. Because after a square and circle, you can't have a square again. So, in a string like 10100, for example, starting with 1, then 0, then 1, then 0, then 0. The initial square has side S. Then, circle has diameter S, then square must have side S / sqrt(2), which is not integer, so the process stops after the circle. So, the number of circles is 2.
+
+Wait, but the string is 10100, which is 1,0,1,0,0. So, the initial square, then circle, then square (which can't be inscribed), so process stops after the circle. Then, the remaining 0s are not processed. So, the number of circles is 2.
+
+But this depends on the initial size S. So, to maximize the number of circles, S should be as small as possible.
+
+Wait, but if S is too small, you can't have enough circles. Let me think.
+
+Wait, perhaps the initial size S can be chosen such that all possible circles after the initial square have integer diameters.
+
+Wait, but the circle's diameter is equal to the square's side. So, if the square's side is S, the circle's diameter is S. Then, the next circle must have diameter less than S, which is an integer.
+
+So, for example, if S is 4, the next circle can have diameter 3, then 2, then 1. So, the number of circles is 3.
+
+But in the first sample, the string is 1110, which is 1,1,1,0. So, initial square S=4, then next circle (diameter 4), then another circle (diameter 3), then another circle (diameter 2), then the 0 is not processed because after a circle, the next figure is a square which can't be inscribed. So, the number of circles is 3.
+
+But the sample output is 1. Wait, that's conflicting.
+
+Wait, the sample input is 1110, so the string is '1110', which is four characters: 1,1,1,0.
+
+Wait, so starting with a square, then another square, then another square, then a circle.
+
+Wait, but after a square, the next figure must be a circle of diameter equal to the square's side. So, to have a circle, the next character must be 0. So, if the string is '1110', it's 1,1,1,0.
+
+So, let's process this:
+
+- Initial figure: square S.
+
+- Next character is 1: so next figure is a square, which must be inscribed in the previous square. The side of the new square must be less than or equal to the previous square's side. But wait, how is this possible? Because a square inscribed in another square must have a side equal to the previous square's side, but that's the same square. So, perhaps the only way is for the next square to have the same side, which is allowed.
+
+But then, each subsequent square would have the same side, so the next square is allowed. But then, after the three squares, the next is a circle. So, the circle's diameter must be equal to the square's side, which is S. So, the circle's diameter is S.
+
+But the circle's diameter is S, which is integer. So, it can be inscribed.
+
+Wait, but then, after the circle, the next figure is nothing because the string ends.
+
+So, in this case, the number of circles is 1.
+
+But wait, the initial square is 1, then another square (same size), then another square (same size), then a circle (diameter S). So, the number of circles is 1.
+
+So, the maximum number of circles is 1.
+
+Ah, I see. So, the initial square can have any size, but the subsequent squares must have the same size. So, in the string '1110', the process is:
+
+- Square 1: side S.
+
+- Then, another square 1: same side S.
+
+- Then, another square 1: same side S.
+
+- Then, a circle 0: diameter S.
+
+So, that's allowed. So, the number of circles is 1.
+
+But wait, why can't the initial square be of size 4, and then the circle be of size 4, then another circle of size 3, which is also allowed, giving two circles?
+
+Wait, but in the string '1110', after the three squares, the next is a circle. So, the initial square is S=4, next is 1, which is square, same size. Then another square, same size. Then, a circle with diameter 4.
+
+So, that's allowed. So, the number of circles is 1.
+
+But wait, the string's next character after the three squares is a 0, which is a circle. So, that's allowed. Then, the string ends. So, the number of circles is 1.
+
+But if the string were longer, say '11100', then after the first 0, you could have another 0 (circle with diameter 3), etc.
+
+So, in the string '1110', the number of circles is 1.
+
+In the string '1001000', which is 1,0,0,1,0,0,0.
+
+So, initial square, then circle (diameter S), then another circle (diameter < S), then square (side = diameter / sqrt(2)), which is not integer, so process stops. So, the number of circles is 2.
+
+Wait, but after the square, the next figure is a circle. Then, another circle, then a square, which can't be inscribed. So, the process stops after the second circle, so the number of circles is 2.
+
+But in the sample explanation, the maximum is 2, but the output is 2? No, the sample output for this case is 2. So, yes, that's correct.
+
+So, the process is: count the number of 0s in the string, but only if each 0 is preceded by a 1 or another 0, but the transition must allow the figure to be inscribed.
+
+Wait, no. The transitions must allow each figure to be inscribed in the previous one.
+
+So, the problem reduces to, for the given string, starting with the initial figure, then for each subsequent figure, check if it can be inscribed in the previous figure.
+
+If yes, add it to the count (if it's a 0, add 1; if it's a 1, perhaps not, but wait, in the sample, the initial figure is a square, then a circle, then another circle, then a square, etc.
+
+But in the case of a square followed by a square, it's allowed, because a square can be inscribed in another square of the same size, but that doesn't change anything.
+
+Wait, but in the string '1110', the process allows three squares, then a circle. So, the circle is allowed because the previous figure is a square with the same size. So, the circle's diameter is equal to the square's side, which is allowed.
+
+So, in this case, the number of circles is 1.
+
+So, the key is that each transition between figures must be allowed.
+
+So, for a transition from 1 to 1: allowed, because a square can be inscribed in another square of the same size.
+
+For a transition from 1 to 0: allowed, as a circle can be inscribed in a square of side equal to the circle's diameter.
+
+For a transition from 0 to 0: allowed, as a circle can be inscribed in another circle of smaller diameter.
+
+For a transition from 0 to 1: not allowed, because a square can't be inscribed in a circle of integer diameter.
+
+So, the allowed transitions are:
+
+- 1 -> 1: allowed.
+
+- 1 -> 0: allowed.
+
+- 0 -> 0: allowed.
+
+- 0 -> 1: not allowed.
+
+- 1 -> 0: allowed.
+
+- 0 -> 1: not allowed.
+
+- 1 -> 0: allowed.
+
+So, the process is:
+
+Start with the first character.
+
+If it's 1:
+
+- Next can be 1 or 0.
+
+If it's 0:
+
+- Next can be 0.
+
+If it's 1, then 0 is allowed, but 0 can't be followed by 1.
+
+So, in code, I think we can model this as a state machine, where the current state is either 'square' or 'circle', and the transitions are allowed based on the next character.
+
+But the initial state depends on the first character.
+
+So, perhaps the approach is:
+
+- For each string, process each character starting from index 0.
+
+- The initial state is determined by the first character: 'square' if it's '1', else 'circle'.
+
+- For each subsequent character, determine if the transition is allowed based on the current state and the next character.
+
+- If allowed, update the current state and proceed.
+
+- Else, stop processing.
+
+- Additionally, for each transition, if the next figure is a circle, increment the circle count.
+
+Wait, but the initial state is 'square' or 'circle', and each transition must satisfy the geometric constraints.
+
+So, let's model this step by step.
+
+Case 1: Initial is 'square' (1).
+
+Subsequent characters can be '1' or '0'.
+
+- If next is '1': allowed. The new figure is square, same size as previous. So, the state remains 'square'.
+
+- If next is '0': allowed. The new figure is circle, with diameter equal to previous square's side. So, the circle is added to the count.
+
+Case 2: Initial is 'circle' (0).
+
+Subsequent characters can only be '0'.
+
+- If next is '0': allowed. The new figure is circle with smaller diameter.
+
+- If next is '1': not allowed.
+
+So, the process is:
+
+Initialize current state as 'square' if first character is '1', else 'circle'.
+
+Initialize circle_count as 0.
+
+For each character in the string, starting from index 1:
+
+- Check if the current state allows the transition to the next character.
+
+- For example:
+
+   - If current state is 'square':
+
+      - next character is '1': allowed. state remains 'square'.
+
+      - next character is '0': allowed. circle_count +=1. state becomes 'circle'.
+
+   - If current state is 'circle':
+
+      - next character must be '0': allowed. circle_count +=1. state remains 'circle'.
+
+      - next character '1': not allowed. stop.
+
+So, the circle_count is incremented only when transitioning from 'square' to 'circle'.
+
+Wait, but in the case where the initial state is 'square', and the next is '0', then the circle_count increases by 1. Then, the next character can be another '0', which is allowed. So, the count increases again.
+
+So, for example, the string '1000' would have:
+
+- Initial: square.
+
+- Next is '0': allowed. circle_count =1. state is 'circle'.
+
+- Next is '0': allowed. circle_count=2. state remains 'circle'.
+
+- Next is '0': allowed. circle_count=3. state remains 'circle'.
+
+So, the total circle count is 3.
+
+But wait, the initial square has side S. The first circle has diameter S, then the next circle has diameter less than S, say S-1, then S-2, etc. So, as long as the next character is '0', it's allowed, and the count increases.
+
+So, in code, for a string starting with '1', the count is the number of '0's in the string that are either after the initial '1' or after a '0'.
+
+Wait, no. Because in the string '1010', starting with '1', the next is '0' (count +=1), then '1' is not allowed, so the process stops. So, circle_count is 1.
+
+But the string is '1010', which is 1,0,1,0.
+
+So, the initial square, then circle (count 1), then square (not allowed), so process stops. The last '0' is not counted because the transition is invalid.
+
+So, the circle_count is 1.
+
+So, in code, for each string, the process is:
+
+count = 0
+
+state = 'square' if first char is '1' else 'circle'
+
+for i from 1 to len(s)-1:
+
+   next_char = s[i]
+
+   if state == 'square':
+
+      if next_char == '1':
+
+          state remains 'square'
+
+      elif next_char == '0':
+
+          count +=1
+
+          state becomes 'circle'
+
+      else:
+
+          # invalid, stop
+
+          break
+
+   elif state == 'circle':
+
+      if next_char == '0':
+
+          count +=1
+
+          state remains 'circle'
+
+      elif next_char == '1':
+
+          # invalid, stop
+
+          break
+
+      else:
+
+          # invalid, stop
+
+          break
+
+So, in this case, the maximum number of circles is 'count'.
+
+But wait, what about when the initial state is 'circle'? For example, the string is '0001000'.
+
+In this case, the initial state is 'circle'.
+
+Then, next characters are '0's.
+
+So, each '0' is allowed, increasing the count by 1 each time.
+
+So, the string '0001000' would have:
+
+- Initial: circle.
+
+- Next is '0': count=1.
+
+- Next is '0': count=2.
+
+- Next is '0': count=3.
+
+- Next is '1': invalid, stop.
+
+- Next is '0': not allowed, stop.
+
+- Next is '0': not allowed, stop.
+
+So, the count is 3.
+
+Which matches the sample output.
+
+So, the code seems to model this correctly.
+
+Another sample: '1001000' is 1,0,0,1,0,0,0.
+
+Processing:
+
+- Initial: square.
+
+- next is '0': count=1, state 'circle'.
+
+- next is '0': count=2, state 'circle'.
+
+- next is '1': invalid, stop.
+
+So, the count is 2.
+
+Which matches the sample.
+
+Another sample: '0010' is 0,0,1,0.
+
+Processing:
+
+- Initial: circle.
+
+- next is '0': count=1, state 'circle'.
+
+- next is '1': invalid, stop.
+
+So, count is 1.
+
+But the sample output is 0. Hmm, this is conflicting.
+
+Wait, in the sample input 2, the string is '0010', which is '0','0','1','0'.
+
+So, according to the code above, the initial state is 'circle'.
+
+Next character is '0': allowed, count=1, state remains 'circle'.
+
+Next character is '1': invalid, so stop. So, count is 1.
+
+But the sample output is 0.
+
+Wait, that's a problem.
+
+What's wrong here?
+
+Let me look back at the sample explanation.
+
+Sample 2:
+
+Input is '0010'.
+
+Sample explanation: Let the first two circles be of diameter 10, we can see that we cannot inscribe another square of any integer dimension inside them.
+
+So, the maximum number of circles is 0.
+
+Wait, why is that?
+
+Because the string is 0,0,1,0.
+
+So, the initial figure is a circle of diameter S.
+
+Next is a circle, diameter less than S, say S-1.
+
+Then, the next character is '1', which is a square. To inscribe a square inside a circle, the square's side must be equal to the circle's diameter / sqrt(2). So, for the circle with diameter S-1, the square's side is (S-1)/sqrt(2). For this to be integer, S-1 must be a multiple of sqrt(2), which is impossible because S-1 is integer. So, the process stops after the second circle, which is '0', and the next '1' is invalid.
+
+But according to the code, the count would be 2, because after the initial circle, each '0' is counted.
+
+Wait, but the sample output is 0.
+
+Wait, this suggests that the code needs to be adjusted. Because according to the sample, the maximum number of circles is 0, but according to the current logic, it's 2.
+
+So, perhaps the initial state is 'circle', but the process stops at the first '1' because you can't inscribe a square into a circle.
+
+So, the sample input 2 would have:
+
+- Initial: circle.
+
+- Next is '0': allowed, count=1.
+
+- Next is '1': invalid, stop.
+
+So, the count is 1.
+
+But the sample output is 0.
+
+Hmm, this is a contradiction. Why?
+
+Wait, perhaps the initial state is 'circle', and the first '0' is allowed, but in the sample, the initial circle has diameter 10, next is another circle with diameter 9, then a square with side 9 / sqrt(2) which is not integer. So, the process stops after the second circle, which is '0'.
+
+But in the code, the count is incremented for the second '0', making it 2. But the sample output is 0.
+
+Wait, no, the sample explanation says that after the two circles, you cannot inscribe a square. So, the process stops after the second circle, and the third character is '1', which is invalid. So, the count is 2.
+
+But the sample output is 0. So, that's conflicting.
+
+Wait, the sample says that the answer is 0. But according to the process, the count should be 2.
+
+Wait, but the sample explanation says that the answer is 0, which suggests that no circles are inscribed.
+
+Wait, no, the sample explanation says that the answer is 0 because the next figure is a square which can't be inscribed.
+
+So, perhaps the count is the number of circles that are inscribed in the initial square.
+
+Wait, I think I'm misunderstanding the problem.
+
+Wait, the problem says: "the maximum number of circles we can inscribe in a square according to the given string."
+
+So, the initial figure is either a circle or a square, and we are to count how many circles are inscribed in it.
+
+Wait, perhaps the problem is that the string starts with a circle, but that requires a square to inscribe it, which isn't possible. So, in that case, no circles can be inscribed.
+
+Wait, no, the initial figure is a circle, but the next is a square, which can't be inscribed, so the process stops. So, the number of circles is the number of '0's in the string that can be inscribed in the initial figure.
+
+But in the initial figure being a circle, can we have any circles inscribed in it?
+
+Wait, for example, if the string starts with a circle, the next can be a circle, which is inscribed in the previous one. So, the count increases.
+
+But in the sample input 2, the string is '0010'. The initial figure is a circle. Next is a circle, which is allowed, count increases to 1. Then, next is '1', which is a square, which can't be inscribed, so the process stops. So, the count is 1.
+
+But the sample output is 0, which suggests that the count is 0.
+
+So, perhaps the problem is not to count the circles in the string, but the number of times a circle is inscribed in a square.
+
+Wait, the problem statement says: "the maximum number of circles we can inscribe in a square according to the given string."
+
+Ah, that's a key point I missed.
+
+So, the initial figure must be a square. Because only then can you inscribe a circle in it.
+
+Because a square can have a circle inscribed, but a circle cannot have a square inscribed unless the square's side is a multiple of 1/sqrt(2), which is impossible unless it's zero.
+
+So, the initial figure must be a square to have any circles inscribed.
+
+So, in the sample input 2, the string starts with 0, which is a circle. Since the initial figure is a circle, you can't inscribe any square in it, so the process is stopped immediately, and the count is 0.
+
+Ah, that's the crux of the problem.
+
+So, the initial figure must be a square for any circles to be inscribed. Otherwise, if the initial figure is a circle, you can't inscribe any squares or circles in it, except for other circles.
+
+Wait, no, the problem says that a circle is inscribed in a square. So, to have a circle, the initial figure must be a square.
+
+Because a circle cannot be inscribed in another circle with a smaller diameter, but that's allowed. Wait, no: a circle can be inscribed in another circle with a smaller diameter. So, the initial figure can be a circle, and then the next can be a circle, etc.
+
+But the problem statement says: "the maximum number of circles we can inscribe in a square according to the given string."
+
+So, perhaps the initial figure must be a square for you to start inscribing circles.
+
+Because in the sample input 2, the initial figure is a circle, and you can't inscribe any square in it, so the count is 0.
+
+In the sample input 1, the initial is a square, so you can inscribe a circle, then another circle, then a square, but the square can't be inscribed, so the count is 1.
+
+So, the key is that the initial figure must be a square to have any circles inscribed.
+
+So, the process is:
+
+If the string starts with a square, then you can process the string to count the number of circles that can be inscribed.
+
+If the string starts with a circle, then you cannot inscribe any circles, so the count is 0.
+
+So, this changes the approach.
+
+So, in the code, the first step is to check if the first character is '1' (square). If it's '0', the count is 0.
+
+Otherwise, if it's '1', process the string, and count the number of '0's that can be inscribed in the initial square.
+
+So, the code should:
+
+- For each string, if it starts with '0', output 0.
+
+- Else, process the string starting with '1', and count the number of '0's that can be inscribed.
+
+So, in sample input 2, the string is '0010', so it starts with '0', so the output is 0.
+
+In sample input 1, the string is '1110', which starts with '1', so process.
+
+Then, the count is 1.
+
+In sample input 3, the string is '1001000', which starts with '1', process.
+
+So, the code needs to be adjusted.
+
+So, the steps are:
+
+For each string:
+
+1. If the first character is '0', then output 0.
+
+2. Else:
+
+   a. Initialize current state as 'square'.
+
+   b. Initialize circle_count as 0.
+
+   c. For each character from index 1 onwards:
+
+      i. If current state is 'square':
+
+         - if next character is '1': allowed, state remains 'square'.
+
+         - if next character is '0': allowed, circle_count +=1, state becomes 'circle'.
+
+         - else: invalid, break.
+
+      ii. If current state is 'circle':
+
+         - if next character is '0': allowed, circle_count +=1, state remains 'circle'.
+
+         - else: invalid, break.
+
+   d. Output circle_count.
+
+So, in sample input 2: starts with '0', output 0.
+
+Sample input 1: starts with '1', process:
+
+Initial state: square.
+
+char 1: '1' -> state remains square.
+
+char 2: '1' -> state remains square.
+
+char 3: '0' -> circle_count +=1, state becomes circle.
+
+char 4: '0' is invalid, because next character after circle must be '0' but in this case, the string is '1110', which is length 4.
+
+Wait, no: the string is '1110', so index 3 is '0'.
+
+So, after processing '0', the next character is '0' (char 4 is beyond the string length, so we stop).
+
+So, in this case, the circle_count is 1.
+
+So, the sample input 1's output is 1.
+
+Sample input 3: '1001000' starts with '1'.
+
+Processing:
+
+- Initial state: square.
+
+- char 1: '0' -> circle_count =1, state circle.
+
+- char 2: '0' -> circle_count=2, state circle.
+
+- char 3: '1' -> invalid, stop.
+
+So, circle_count is 2.
+
+Which matches the sample.
+
+So, the code needs to be modified.
+
+So, the code will read each string, and:
+
+- If the first character is '0', output 0.
+
+- Else, process the string as per the state transitions, counting the '0's.
+
+So, the code steps are:
+
+Read N.
+
+For each N strings:
+
+   s = input string.
+
+   if s[0] == '0':
+
+      print(0)
+
+      continue
+
+   else:
+
+      current_state = 'square'
+
+      count =0
+
+      for c in s[1:]:
+
+          if current_state == 'square':
+
+              if c == '1':
+
+                  current_state = 'square'
+
+              elif c == '0':
+
+                  count +=1
+
+                  current_state = 'circle'
+
+              else:
+
+                  break
+
+          else: # circle
+
+              if c == '0':
+
+                  count +=1
+
+              else:
+
+                  break
+
+      print(count)
+
+Wait, but in the case where the string is '11100', the initial state is square. Then, the next three are '1's, so state remains square. Then, when '0' is encountered, count increases by 1, state becomes circle. Next '0' is invalid, so process stops. So, count is 1.
+
+But in reality, after the initial square, each subsequent square can be inscribed, but the circle can't be inscribed in multiple squares, as each square can't have a square inscribed with integer side in the next.
+
+Wait, no. Because in a square, you can inscribe another square with same size, but that's the same as the previous.
+
+So, in the case of '11100', the count is 1, because after the initial square, the next '0' is allowed, giving one circle.
+
+So, the code seems correct.
+
+Testing the sample input 2:
+
+s = '0010'
+
+First character is '0', so output 0.
+
+Sample input 1: '1110' → output 1.
+
+Sample input 3: '1001000' → output 2.
+
+Which matches.
+
+Another test case: string '1010'.
+
+Processing:
+
+current_state = square.
+
+c: '0' → count=1, state circle.
+
+c: '1' → invalid, break.
+
+count=1.
+
+Another test case: string '10000'.
+
+Processing:
+
+current_state = square.
+
+c: '0' → count=1, state circle.
+
+c: '0' → count=2, state circle.
+
+c: '0' → count=3, state circle.
+
+c: '0' → count=4, state circle.
+
+So, output is 4.
+
+Another test case: string '100000'.
+
+Processing:
+
+count becomes 5.
+
+Another test case: string '1001'.
+
+Processing:
+
+after '0's, next is '1': invalid. So, count is 2.
+
+Another test case: string '10001'.
+
+Processing: after '0's, next is '1', invalid. count is 3.
+
+Another test case: string '1000000'.
+
+count is 5.
+
+So, the code seems to handle these cases.
+
+So, the code can be written as follows.
+
+We need to read N, then for each string:
+
+- if first character is '0', output 0.
+
+- else, process the string, tracking the current state (square or circle), and count the number of transitions from square to circle, which correspond to adding a circle.
+
+So, the code in Python:
+
+Read N.
+
+For each of N lines:
+
+   s = input().strip()
+
+   if s[0] == '0':
+
+       print(0)
+
+       continue
+
+   current_state = 'square'
+
+   count =0
+
+   for c in s[1:]:
+
+       if current_state == 'square':
+
+           if c == '1':
+
+               current_state = 'square'
+
+           elif c == '0':
+
+               count +=1
+
+               current_state = 'circle'
+
+           else:
+
+               break
+
+       else: # circle
+
+           if c == '0':
+
+               count +=1
+
+           else:
+
+               break
+
+   print(count)
+
+Testing this against the sample inputs:
+
+Sample 1:
+
+Input string '1110' → output 1.
+
+Sample 2: '0010' → output 0.
+
+Sample 3: '1001000' → output 2.
+
+Which matches.
+
+Another test case: '1000' → output 3.
+
+Another test case: '100100000' → output 4.
+
+Another test case: '1001' → output 2.
+
+Another test case: '1000000' → output 5.
+
+Another test case: '10000000' → output 6.
+
+Another test case: '1000000000' → output 7.
+
+Another test case: '101010' → after first '0', the next is '1' which is invalid. So, output 1.
+
+Another test case: '10101010' → same, output 1.
+
+Another test case: '100100100' → after first '0', count becomes 1, then next '0' is allowed, count 2, next '1' invalid. So, output 2.
+
+So, the code seems to handle all these cases.
+
+Thus, the final code is as written.
+</think>
+
+To solve this problem, we need to determine the maximum number of circles that can be inscribed within a given string of geometric figures. Each figure in the string is either a square (represented by '1') or a circle (represented by '0'). The process of inscribing figures must follow specific geometric constraints.
+
+### Approach
+1. **Initial Check**: If the string starts with a circle ('0'), it is impossible to inscribe any circles within a square because the initial figure must be a square to inscribe a circle. Thus, the result for such strings is 0.
+2. **State Tracking**: For strings starting with a square ('1'), we need to track the state transitions between squares and circles:
+   - **Square State**: If the current figure is a square, the next figure can either be another square or a circle.
+   - **Circle State**: If the current figure is a circle, the next figure must be another circle, as a square cannot be inscribed within a circle of integer side length.
+3. **Counting Circles**: Each transition from a square to a circle increments the count of inscribed circles.
+
+### Solution Code
+```python
+n = int(input())
+for _ in range(n):
+    s = input().strip()
+    if s[0] == '0':
+        print(0)
+        continue
+    current_state = 'square'
+    count = 0
+    for c in s[1:]:
+        if current_state == 'square':
+            if c == '1':
+                current_state = 'square'
+            elif c == '0':
+                count += 1
+                current_state = 'circle'
+            else:
+                break
+        else:
+            if c == '0':
+                count += 1
+            else:
+                break
+    print(count)
+```
+
+### Explanation
+- **Reading Input**: The number of strings is read first. For each string, we check if it starts with a circle. If it does, we immediately output 0.
+- **State Transitions**: Starting from a square, we check each subsequent figure. If a transition to a circle is valid, we increment the count and update the state. If a transition to a square is valid after a circle, it is allowed.
+- **Output**: For each string, the count of valid transitions from square to circle is printed, representing the maximum number of circles that can be inscribed.
+
+This approach efficiently processes each string in linear time, ensuring that we only consider valid transitions and count the maximum number of circles that can be inscribed.

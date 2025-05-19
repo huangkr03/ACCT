@@ -1,7 +1,6 @@
 import os
 import json
 from pprint import pprint
-import requests
 import torch
 import random
 import argparse
@@ -19,6 +18,7 @@ from tqdm import tqdm
 from copy import deepcopy
 from transformers import AutoTokenizer
 import re
+from utils import dataloader
 
 def set_random_seed(seed):
     random.seed(seed)
@@ -174,6 +174,32 @@ def infer(args, test_data):
                 'content': prompt
             }]
             messages.append(message)
+    elif args.benchmark == "taco":
+        # 处理 taco 数据集
+        for example in test_data:
+            problem = example['question']
+            message = [{
+                'role': 'user',
+                'content': problem
+            }]
+            messages.append(message)
+    elif args.benchmark == "concode" or args.benchmark == "conala":
+        for example in test_data:
+            problem = example['prompt']
+            message = [{
+                'role': 'user',
+                'content': problem
+            }]
+            messages.append(message)
+    elif args.benchmark == "codeforces":
+        # 处理 codeforces 数据集
+        for example in test_data:
+            problem = example['prompt']
+            message = [{
+                'role': 'user',
+                'content': problem
+            }]
+            messages.append(message)
     else:
         for example in test_data:
             problem = example['problem'] if 'problem' in example else example['question']
@@ -182,6 +208,7 @@ def infer(args, test_data):
                 'content': "Please reason step by step, and put your final answer within \\boxed{}.\n" + problem
             }]
             messages.append(message)
+    
 
     print("加载模型和分词器...")
     print(f"\033[91mprompt demo: {messages[0]}\033[0m")
@@ -210,7 +237,8 @@ def infer(args, test_data):
         "enable_lora": args.use_adapter,
         "gpu_memory_utilization": args.gpu_memory_utilization,
         "max_lora_rank": 16,
-        "max_model_len": args.max_new_tokens + 2048
+        # "max_model_len": args.max_new_tokens + 2048
+        "max_model_len": args.max_new_tokens
     }
     
     llm = LLM(**model_kwargs)
@@ -258,8 +286,7 @@ def infer(args, test_data):
 
         full_correctnesses = []
         # 提取预测答案
-        if args.benchmark != "human_eval":
-        
+        if args.benchmark != "human_eval" and args.benchmark != "taco" and args.benchmark != "concode" and args.benchmark != "conala" and args.benchmark != "codeforces":
             boxed_answers = []
             # filter finish_reason = "stop" (both model_outputs and answer)
             output_extracted, answer_filtered = [], []
@@ -326,12 +353,12 @@ def infer(args, test_data):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output_dir", type=str, default="outputs/DeepSeek-R1-Distill-Qwen-7B/", help="default to `model_path`_predictions")
-    parser.add_argument("--model_path", type=str, default="/home/keruihuang/models/DeepSeek-R1-Distill-Qwen-7B")
-    parser.add_argument("--tokenizer_path", type=str, default="/home/keruihuang/models/DeepSeek-R1-Distill-Qwen-7B")
-    parser.add_argument("--adapter_path", type=str, default="/home/keruihuang/models/DeepSeek-R1-Distill-Qwen-7B/lora_sft")
+    parser.add_argument("--model_path", type=str, default="../models/DeepSeek-R1-Distill-Qwen-7B")
+    parser.add_argument("--tokenizer_path", type=str, default=None)
+    parser.add_argument("--adapter_path", type=str, default="../models/DeepSeek-R1-Distill-Qwen-7B/lora_sft")
     parser.add_argument("--model_size", type=str, default="7b")
     parser.add_argument("--use_adapter", action='store_true', default=False, help="whether to use LoRA")
-    parser.add_argument("--benchmark", type=str, choices=['r1', 'gsm8k', 'math', 'human_eval'], default="r1")
+    parser.add_argument("--benchmark", type=str, choices=['r1', 'gsm8k', 'math', 'human_eval', 'taco', 'concode', 'conala', 'codeforces'], default="gsm8k")
     parser.add_argument("--data_type", type=str, choices=['train', 'test'], default="test")
 
     parser.add_argument("--max_num_examples", type=int, default=100000000, help="maximum number of examples to evaluate.")
@@ -347,6 +374,9 @@ if __name__ == "__main__":
     parser.add_argument("--save_period", type=int, default=50, help="save every N steps")
     
     args, unparsed_args = parser.parse_known_args()
+    
+    if args.model_path and not args.tokenizer_path:
+        args.tokenizer_path = args.model_path
 
     # os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
@@ -369,10 +399,30 @@ if __name__ == "__main__":
         dataset_path = f"datasets/gsm8k/{args.data_type}.jsonl"
     elif args.benchmark == "math":
         dataset_path = f"datasets/math-500/{args.data_type}.jsonl"
-    test_data = read_data(dataset_path)
-        
+    elif args.benchmark == "taco":
+        dataset_path = f"datasets/TACO/{args.data_type}.jsonl"
+    if dataset_path:
+        test_data = read_data(dataset_path)
+    elif args.benchmark == "concode":
+        concode = dataloader.Concode()
+        test_data = concode.get_dataset(train=args.data_type == "train")
+    elif args.benchmark == "conala":
+        conala = dataloader.Conala()
+        test_data = conala.get_dataset(train=args.data_type == "train")
+    elif args.benchmark == "codeforces":
+        dataset_path = f"datasets/codeforces/{args.data_type}_prompts.jsonl"
+    else:
+        raise NotImplementedError(f"Unsupported benchmark: {args.benchmark}")
+    
+    if dataset_path:
+        test_data = read_data(dataset_path)
+    
     if args.max_num_examples and len(test_data) > args.max_num_examples:
         test_data = random.sample(test_data, args.max_num_examples)
+        
+    print(test_data[0].keys())
+    
+    print(f"Loaded {len(test_data)} examples from {dataset_path}", flush=True)
     
     output_dir = os.path.join(args.output_dir, "samples")
     
@@ -398,7 +448,11 @@ if __name__ == "__main__":
     for item in results:
         acc += 1 if item['correctness'] == 1 else 0
         total += 1 if item['correctness'] != -1 else 0
-    print("output acc = {:.5f}".format(acc / total), flush=True)
+    if total != 0:
+        accruacy = acc / total
+    else:
+        accruacy = 0
+    print("output acc = {:.5f}".format(accruacy), flush=True)
     print("output acc including invalid outputs = {:.5f}".format(acc / len(results)), flush=True)
     
     # unfinished count
@@ -412,8 +466,12 @@ if __name__ == "__main__":
     print("output avg_cot_length = {:.5f}".format(avg_cot_length), flush=True)
 
     results_finished = [item for item in results if item['finish_reason'] == 'stop']
-    avg_cot_length_finished = sum(item['cot_length'] for item in results_finished) / len(results_finished)
-    print("output avg_cot_length_finished = {:.5f}".format(avg_cot_length_finished), flush=True)
+    if len(results_finished) > 0:
+        avg_cot_length_finished = sum(item['cot_length'] for item in results_finished) / len(results_finished)
+        print("output avg_cot_length_finished = {:.5f}".format(avg_cot_length_finished), flush=True)
+    else:
+        avg_cot_length_finished = 0
+        print("output avg_cot_length_finished = {:.5f}".format(avg_cot_length_finished), flush=True)
     
     cot_lengths = [item['cot_length'] for item in results]
     middle_cot_length = np.median(cot_lengths)
@@ -436,7 +494,7 @@ if __name__ == "__main__":
     with open(os.path.join(output_dir, metric_fname), "w") as fout:
         json_data = {
             "n_samples": len(results),
-            "accuracy": acc / total,
+            "accuracy": accruacy,
             "accuracy_including_invalid_outputs": acc / len(results),
             "max_token_exceeded": len(invalid_outputs),
             "avg_cot_length": avg_cot_length,

@@ -9,15 +9,15 @@ deepspeed: /home/keruihuang/LLaMA-Factory/examples/deepspeed/ds_z2_config.json
 # 移除 finetuning_type 和所有 lora 相关配置
 
 ### dataset
-dataset: dataset-gsm8k-all
+dataset: codeforces-16k
 template: deepseek3
-cutoff_len: 2048
+cutoff_len: 4096
 max_samples: 10000
 overwrite_cache: true
 preprocessing_num_workers: 16
 
 ### output
-output_dir: /home/keruihuang/models/DeepSeek-R1-Distill-Qwen-7B/sft_gsm8k_all
+output_dir: /home/keruihuang/models/DeepSeek-R1-Distill-Qwen-7B/sft_codeforces
 logging_steps: 10
 save_steps: 300
 plot_loss: true
